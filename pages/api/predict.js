@@ -29,31 +29,28 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Fichier manquant" });
     }
 
-    // Préparer FormData pour Gradio
     const formData = new FormData();
-    formData.append("data", JSON.stringify([null]));  // Champ 'data' attendu
+    formData.append("data", JSON.stringify([null]));
     formData.append("file", fs.createReadStream(uploadedFile.filepath), {
       filename: uploadedFile.originalFilename,
       contentType: uploadedFile.mimetype,
     });
 
     try {
-      // Envoi via axios avec les headers appropriés
       const response = await axios.post(
         "https://amicalement-frog-or-mouse.hf.space/api/predict",
         formData,
         {
-          headers: {
-            ...formData.getHeaders(),
-            "Content-Length": formData.getLengthSync(),  // Définit correctement la taille
-          },
+          headers: formData.getHeaders(),
+          maxBodyLength: Infinity,
         }
       );
 
       res.status(200).json({ result: response.data.data?.[0] || "❌ Réponse invalide" });
     } catch (error) {
-      console.error("Erreur Hugging Face :", error);
-      res.status(500).json({ error: "Erreur Hugging Face", raw: error.response?.data || error.message });
+      const raw = error.response?.data || error.message;
+      console.error("Erreur Hugging Face :", raw);
+      res.status(500).json({ error: "Erreur Hugging Face", raw });
     }
   });
 }
