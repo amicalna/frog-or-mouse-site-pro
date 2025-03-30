@@ -3,12 +3,12 @@ import fs from "fs";
 import FormData from "form-data";
 
 export const config = {
-    api: {
-      bodyParser: false,
-      externalResolver: true,
-    },
-    runtime: "nodejs", // ✅ Important !
-  };  
+  api: {
+    bodyParser: false,
+    externalResolver: true,
+  },
+  runtime: "nodejs",
+};
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -28,25 +28,29 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Fichier manquant" });
     }
 
+    // Préparer le formData comme attendu par Gradio
     const formData = new FormData();
-    formData.append("data", fs.createReadStream(uploadedFile.filepath)); // 🔁 Changement clé: "data" et pas "image"
+    formData.append("data", JSON.stringify([null])); // Gradio attend un champ data (même vide)
+    formData.append("files", fs.createReadStream(uploadedFile.filepath)); // L’image ici
 
     try {
-        const response = await fetch("https://amicalement-frog-or-mouse.hf.space/predict", {
+      const response = await fetch("https://amicalement-frog-or-mouse-api.hf.space/run/predict", {
         method: "POST",
         body: formData,
-        headers: formData.getHeaders(), // 🔐 Ajout essentiel pour que HuggingFace reçoive le bon content-type
+        headers: formData.getHeaders(),
       });
 
-      if (!response.ok) {
-        const text = await response.text();
-        console.error("Erreur réponse Hugging Face:", text);
-        return res.status(response.status).json({ error: "Erreur Hugging Face", detail: text });
+      const text = await response.text();
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch (e) {
+        console.error("Réponse non JSON :", text);
+        return res.status(500).json({ error: "Réponse Hugging Face non JSON", raw: text });
       }
 
-      const result = await response.json();
       console.log("🧪 Réponse HF brute :", result);
-      res.status(200).json({ result: result.data?.[0] || "❌ Réponse invalide" }); // 🧠 Gradio renvoie { data: [resultat] }
+      res.status(200).json({ result: result.data?.[0] || "❌ Réponse invalide" });
     } catch (error) {
       console.error("Erreur appel Hugging Face :", error);
       res.status(500).json({ error: "Erreur Hugging Face", detail: error.message });
