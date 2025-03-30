@@ -1,0 +1,1 @@
+// Simule une pub avant l'upload

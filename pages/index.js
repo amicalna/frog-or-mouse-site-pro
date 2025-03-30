@@ -1,7 +1,7 @@
 import { useState } from "react";
 import EmojiParticles from "../components/EmojiParticles";
 
-const API_URL = "https://huggingface.co/spaces/amicalement/frog-or-mouse/api/predict/"; // à changer en prod
+const API_URL = "/api/predict"; // à changer en prod
 
 export default function Home() {
   const [file, setFile] = useState(null);

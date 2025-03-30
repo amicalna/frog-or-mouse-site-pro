@@ -1,0 +1,1 @@
+// Affiche le résultat (grenouille ou souris)

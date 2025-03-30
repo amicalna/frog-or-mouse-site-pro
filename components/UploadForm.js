@@ -1,0 +1,1 @@
+// Composant pour gérer l'upload et l'appel API
