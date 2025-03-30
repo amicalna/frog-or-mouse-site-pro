@@ -1,5 +1,6 @@
 import formidable from "formidable";
 import fs from "fs";
+import FormData from "form-data";
 
 export const config = {
   api: {
@@ -13,43 +14,25 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Méthode non autorisée" });
   }
 
-  const form = formidable({ multiples: false });
+  const form = new formidable.IncomingForm({ multiples: false });
 
   form.parse(req, async (err, fields, files) => {
-    if (err) {
-      console.error("Erreur parsing fichier :", err);
-      return res.status(500).json({ error: "Erreur parsing fichier" });
+    if (err || !files.file) {
+      return res.status(400).json({ error: "Erreur parsing fichier ou fichier manquant" });
     }
 
-    const uploadedFile = files.file?.[0] || files.file;
-
-    if (!uploadedFile) {
-      return res.status(400).json({ error: "Fichier manquant" });
-    }
-
-    // Conversion du fichier en base64 pour Gradio
-    const imageBuffer = fs.readFileSync(uploadedFile.filepath);
-    const base64Image = imageBuffer.toString("base64");
-    const mimeType = uploadedFile.mimetype;
-
-    const payload = {
-      data: [{
-        data: `data:${mimeType};base64,${base64Image}`,
-        name: uploadedFile.originalFilename
-      }]
-    };
+    const uploadedFile = files.file[0]; // Correction ici : prendre le premier fichier du tableau
+    const formData = new FormData();
+    formData.append("image", fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename);
 
     try {
       const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(payload)
+        body: formData,
       });
 
       const result = await response.json();
-      res.status(200).json({ result: result.data[0] });
+      res.status(200).json({ result });
     } catch (error) {
       console.error("Erreur appel Hugging Face :", error);
       res.status(500).json({ error: "Erreur Hugging Face" });
