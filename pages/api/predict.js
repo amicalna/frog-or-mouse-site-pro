@@ -32,7 +32,7 @@ export default async function handler(req, res) {
     formData.append("data", fs.createReadStream(uploadedFile.filepath)); // 🔁 Changement clé: "data" et pas "image"
 
     try {
-      const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
+        const response = await fetch("https://amicalement-frog-or-mouse.hf.space/predict", {
         method: "POST",
         body: formData,
         headers: formData.getHeaders(), // 🔐 Ajout essentiel pour que HuggingFace reçoive le bon content-type

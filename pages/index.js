@@ -1,6 +1,7 @@
 import { useState } from "react";
 
-const API_URL = "/api/predict";
+// 🔁 Remplace l’URL locale par celle de ton backend Gradio
+const API_URL = "https://amicalement-frog-or-mouse-api.hf.space/run/predict";
 
 export default function Home() {
   const [file, setFile] = useState(null);
@@ -13,7 +14,10 @@ export default function Home() {
     setResult("");
 
     const formData = new FormData();
-    formData.append("file", file);
+
+    // ⚠️ Gradio attend "data" comme un tableau avec le fichier
+    formData.append("data", JSON.stringify([null])); // Gradio veut un champ "data"
+    formData.append("files", file); // Gradio récupère le vrai fichier ici
 
     try {
       const response = await fetch(API_URL, {
@@ -23,7 +27,10 @@ export default function Home() {
 
       const data = await response.json();
       console.log("🧪 Résultat reçu :", data);
-      setResult(data.result || data.error || "❌ Réponse invalide");
+
+      // On récupère la prédiction depuis Gradio
+      const prediction = data.data?.[0];
+      setResult(prediction || "❌ Réponse invalide");
     } catch (error) {
       console.error("Erreur API :", error);
       setResult("❌ Erreur, réessaie !");
