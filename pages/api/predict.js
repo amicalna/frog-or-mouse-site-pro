@@ -1,17 +1,11 @@
-export const config = {
-    api: {
-      bodyParser: false,
-      externalResolver: true, // important
-    },
-  };
-  
 import formidable from "formidable";
 import fs from "fs";
 import FormData from "form-data";
 
 export const config = {
   api: {
-    bodyParser: false, // important
+    bodyParser: false,
+    externalResolver: true, // important
   },
 };
 
@@ -34,13 +28,20 @@ export default async function handler(req, res) {
     }
 
     const formData = new FormData();
-    formData.append("data", fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename);
+    formData.append(
+      "data",
+      fs.createReadStream(uploadedFile.filepath),
+      uploadedFile.originalFilename
+    );
 
     try {
-      const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
-        method: "POST",
-        body: formData,
-      });
+      const response = await fetch(
+        "https://amicalement-frog-or-mouse.hf.space/run/predict",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       const result = await response.json();
       res.status(200).json(result);
