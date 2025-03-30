@@ -10,10 +10,7 @@ export const config = {
 };
 
 export default async function handler(req, res) {
-  console.log("👉 Requête API reçue :", req.method);
-
   if (req.method !== "POST") {
-    console.log("❌ Mauvaise méthode :", req.method);
     return res.status(405).json({ error: "Méthode non autorisée" });
   }
 
@@ -21,27 +18,18 @@ export default async function handler(req, res) {
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      console.error("❌ Erreur parsing fichier :", err);
+      console.error("Erreur parsing fichier :", err);
       return res.status(500).json({ error: "Erreur parsing fichier" });
     }
 
-    console.log("📦 Fichier reçu :", files);
-
-    const uploadedFile = files.file;
-    const filePath = Array.isArray(uploadedFile)
-      ? uploadedFile[0].filepath
-      : uploadedFile?.filepath;
-
-    if (!filePath) {
-      return res.status(400).json({ error: "Fichier introuvable ou invalide" });
+    const uploadedFile = files.file?.[0] || files.file;
+    if (!uploadedFile || !uploadedFile.filepath) {
+      console.error("Fichier manquant ou incorrect", files);
+      return res.status(400).json({ error: "Fichier manquant" });
     }
 
     const formData = new FormData();
-    formData.append(
-      "data",
-      fs.createReadStream(filePath),
-      uploadedFile.originalFilename || "image.jpg"
-    );
+    formData.append("image", fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename);
 
     try {
       const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
@@ -49,10 +37,17 @@ export default async function handler(req, res) {
         body: formData,
       });
 
+      if (!response.ok) {
+        const errorDetail = await response.text();
+        console.error("Erreur réponse Hugging Face:", errorDetail);
+        return res.status(response.status).json({ error: "Erreur Hugging Face", detail: errorDetail });
+      }
+
       const result = await response.json();
-      res.status(200).json(result);
+      res.status(200).json({ result });
+
     } catch (error) {
-      console.error("🔥 Erreur appel Hugging Face :", error);
+      console.error("Erreur appel Hugging Face :", error);
       res.status(500).json({ error: "Erreur Hugging Face" });
     }
   });
