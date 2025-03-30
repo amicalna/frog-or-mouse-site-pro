@@ -23,11 +23,12 @@ export default function Home() {
       });
 
       const data = await response.json();
-      setResult(data.result);
-    } catch (error) {
-      console.error("Erreur API :", error);
-      setResult("❌ Erreur, réessaie !");
-    }
+console.log("🧪 Résultat reçu :", data);
+setResult(data.data?.[0] || "❌ Réponse invalide");
+} catch (error) {
+  console.error("Erreur API :", error);
+  setResult("❌ Erreur, réessaie !");
+}
 
     setLoading(false);
   };
