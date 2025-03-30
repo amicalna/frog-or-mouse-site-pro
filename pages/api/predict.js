@@ -5,12 +5,15 @@ import FormData from "form-data";
 export const config = {
   api: {
     bodyParser: false,
-    externalResolver: true, // important
+    externalResolver: true,
   },
 };
 
 export default async function handler(req, res) {
+  console.log("📩 Requête reçue :", req.method);
+
   if (req.method !== "POST") {
+    console.log("❌ Mauvaise méthode :", req.method);
     return res.status(405).json({ error: "Méthode non autorisée" });
   }
 
@@ -18,14 +21,17 @@ export default async function handler(req, res) {
 
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      console.error("Erreur de parsing :", err);
+      console.error("❌ Erreur de parsing :", err);
       return res.status(500).json({ error: "Erreur parsing fichier" });
     }
 
     const uploadedFile = files.file;
     if (!uploadedFile) {
+      console.log("❌ Aucun fichier reçu");
       return res.status(400).json({ error: "Fichier manquant" });
     }
+
+    console.log("📸 Fichier reçu :", uploadedFile.originalFilename);
 
     const formData = new FormData();
     formData.append(
@@ -44,9 +50,10 @@ export default async function handler(req, res) {
       );
 
       const result = await response.json();
+      console.log("✅ Résultat Hugging Face :", result);
       res.status(200).json(result);
     } catch (error) {
-      console.error("Erreur appel Hugging Face :", error);
+      console.error("❌ Erreur appel Hugging Face :", error);
       res.status(500).json({ error: "Erreur Hugging Face" });
     }
   });
