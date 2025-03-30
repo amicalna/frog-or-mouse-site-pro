@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Erreur parsing fichier ou fichier manquant" });
     }
 
-    const uploadedFile = files.file[0]; // Correction ici : prendre le premier fichier du tableau
+    const uploadedFile = files.file[0]; 
     const formData = new FormData();
     formData.append("image", fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename);
 
@@ -31,7 +31,10 @@ export default async function handler(req, res) {
         body: formData,
       });
 
-      const result = await response.json();
+      const text = await response.text();  // Récupérer la réponse brute du serveur
+      console.log("🟢 Réponse brute HF :", text);  // Logger la réponse brute côté serveur pour débugger
+
+      const result = JSON.parse(text);
       res.status(200).json({ result });
     } catch (error) {
       console.error("Erreur appel Hugging Face :", error);
