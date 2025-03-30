@@ -1,3 +1,10 @@
+export const config = {
+    api: {
+      bodyParser: false,
+      externalResolver: true, // important
+    },
+  };
+  
 import formidable from "formidable";
 import fs from "fs";
 import FormData from "form-data";
