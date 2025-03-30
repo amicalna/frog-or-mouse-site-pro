@@ -17,7 +17,7 @@ export default function Home() {
 
     // ⚠️ Gradio attend "data" comme un tableau avec le fichier
     formData.append("data", JSON.stringify([null])); // Gradio veut un champ "data"
-    formData.append("files", file); // Gradio récupère le vrai fichier ici
+    formData.append("file", file);
 
     try {
       const response = await fetch(API_URL, {
