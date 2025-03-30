@@ -3,11 +3,12 @@ import fs from "fs";
 import FormData from "form-data";
 
 export const config = {
-  api: {
-    bodyParser: false,
-    externalResolver: true,
-  },
-};
+    api: {
+      bodyParser: false,
+      externalResolver: true,
+    },
+    runtime: "nodejs", // ✅ Important !
+  };  
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
