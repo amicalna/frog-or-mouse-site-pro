@@ -1,6 +1,7 @@
 import formidable from "formidable";
 import fs from "fs";
 import FormData from "form-data";
+import axios from "axios";
 
 export const config = {
   api: {
@@ -24,39 +25,32 @@ export default async function handler(req, res) {
     }
 
     const uploadedFile = files.file?.[0] || files.file;
-    console.log("📂 Fichier uploadé :", uploadedFile);
     if (!uploadedFile || !uploadedFile.filepath) {
       return res.status(400).json({ error: "Fichier manquant" });
     }
 
-    // Préparer le formData comme attendu par Gradio
     const formData = new FormData();
-    console.log("📂 Fichier reçu depuis le frontend :", uploadedFile);
-    formData.append("data", JSON.stringify([null])); // Gradio attend [null]
-    formData.append("file", fs.createReadStream(uploadedFile.filepath)); // ⚠️ Champ "file"
-     
+    formData.append("data", JSON.stringify([null]));
+    formData.append("file", fs.createReadStream(uploadedFile.filepath), {
+      filename: uploadedFile.originalFilename,
+      contentType: uploadedFile.mimetype,
+    });
+
     try {
-      const response = await fetch("https://amicalement-frog-or-mouse.hf.space/api/predict", {
-        method: "POST",
-        body: formData,
-        headers: formData.getHeaders(),
-      });
+      const response = await axios.post(
+        "https://amicalement-frog-or-mouse.hf.space/api/predict",
+        formData,
+        {
+          headers: formData.getHeaders(),
+          maxBodyLength: Infinity,
+        }
+      );
 
-      const text = await response.text();
-      console.log("📨 Réponse Hugging Face :", text);
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch (e) {
-        console.error("Réponse non JSON :", text);
-        return res.status(500).json({ error: "Réponse Hugging Face non JSON", raw: text });
-      }
-
-      console.log("🧪 Réponse HF brute :", result);
-      res.status(200).json({ result: result.data?.[0] || "❌ Réponse invalide" });
+      res.status(200).json({ result: response.data.data?.[0] || "❌ Réponse invalide" });
     } catch (error) {
-      console.error("Erreur appel Hugging Face :", error);
-      res.status(500).json({ error: "Erreur Hugging Face", detail: error.message });
+      const raw = error.response?.data || error.message;
+      console.error("Erreur Hugging Face :", raw);
+      res.status(500).json({ error: "Erreur Hugging Face", raw });
     }
   });
 }
