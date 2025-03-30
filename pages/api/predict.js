@@ -28,14 +28,14 @@ export default async function handler(req, res) {
     }
 
     const formData = new FormData();
-    formData.append("image", fs.createReadStream(uploadedFile.filepath));
+    formData.append("data", fs.createReadStream(uploadedFile.filepath)); // 🔁 Changement clé: "data" et pas "image"
 
     try {
-        const response = await fetch("https://amicalement-frog-or-mouse.hf.space/predict", {
-            method: "POST",
-            body: formData,
-          });
-          
+      const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
+        method: "POST",
+        body: formData,
+        headers: formData.getHeaders(), // 🔐 Ajout essentiel pour que HuggingFace reçoive le bon content-type
+      });
 
       if (!response.ok) {
         const text = await response.text();
@@ -44,7 +44,8 @@ export default async function handler(req, res) {
       }
 
       const result = await response.json();
-      res.status(200).json({ result });
+      console.log("🧪 Réponse HF brute :", result);
+      res.status(200).json({ result: result.data?.[0] || "❌ Réponse invalide" }); // 🧠 Gradio renvoie { data: [resultat] }
     } catch (error) {
       console.error("Erreur appel Hugging Face :", error);
       res.status(500).json({ error: "Erreur Hugging Face", detail: error.message });
