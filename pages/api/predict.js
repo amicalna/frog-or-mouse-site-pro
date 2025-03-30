@@ -14,16 +14,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Méthode non autorisée" });
   }
 
-  const form = new formidable.IncomingForm({ multiples: false });
+  const form = formidable({ multiples: false });
 
   form.parse(req, async (err, fields, files) => {
-    if (err || !files.file) {
-      return res.status(400).json({ error: "Erreur parsing fichier ou fichier manquant" });
+    if (err) {
+      console.error("Erreur parsing fichier :", err);
+      return res.status(500).json({ error: "Erreur parsing fichier" });
     }
 
-    const uploadedFile = files.file[0]; 
+    const uploadedFile = files.file?.[0] || files.file;
+    if (!uploadedFile || !uploadedFile.filepath) {
+      return res.status(400).json({ error: "Fichier manquant" });
+    }
+
     const formData = new FormData();
-    formData.append("image", fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename);
+    formData.append("image", fs.createReadStream(uploadedFile.filepath));
 
     try {
       const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
@@ -31,14 +36,17 @@ export default async function handler(req, res) {
         body: formData,
       });
 
-      const text = await response.text();  // Récupérer la réponse brute du serveur
-      console.log("🟢 Réponse brute HF :", text);  // Logger la réponse brute côté serveur pour débugger
+      if (!response.ok) {
+        const text = await response.text();
+        console.error("Erreur réponse Hugging Face:", text);
+        return res.status(response.status).json({ error: "Erreur Hugging Face", detail: text });
+      }
 
-      const result = JSON.parse(text);
+      const result = await response.json();
       res.status(200).json({ result });
     } catch (error) {
       console.error("Erreur appel Hugging Face :", error);
-      res.status(500).json({ error: "Erreur Hugging Face" });
+      res.status(500).json({ error: "Erreur Hugging Face", detail: error.message });
     }
   });
 }
