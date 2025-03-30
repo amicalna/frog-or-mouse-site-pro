@@ -31,10 +31,11 @@ export default async function handler(req, res) {
     formData.append("image", fs.createReadStream(uploadedFile.filepath));
 
     try {
-      const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
-        method: "POST",
-        body: formData,
-      });
+        const response = await fetch("https://amicalement-frog-or-mouse.hf.space/predict", {
+            method: "POST",
+            body: formData,
+          });
+          
 
       if (!response.ok) {
         const text = await response.text();
