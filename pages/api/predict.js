@@ -1,6 +1,5 @@
 import formidable from "formidable";
 import fs from "fs";
-import FormData from "form-data";
 
 export const config = {
   api: {
@@ -23,29 +22,33 @@ export default async function handler(req, res) {
     }
 
     const uploadedFile = files.file?.[0] || files.file;
-    if (!uploadedFile || !uploadedFile.filepath) {
-      console.error("Fichier manquant ou incorrect", files);
+
+    if (!uploadedFile) {
       return res.status(400).json({ error: "Fichier manquant" });
     }
 
-    const formData = new FormData();
-    formData.append("data", fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename);
+    // Conversion du fichier en base64 pour Gradio
+    const imageBuffer = fs.readFileSync(uploadedFile.filepath);
+    const base64Image = imageBuffer.toString("base64");
+    const mimeType = uploadedFile.mimetype;
+
+    const payload = {
+      data: [
+        `data:${mimeType};base64,${base64Image}`
+      ]
+    };
 
     try {
-        const response = await fetch("https://amicalement-frog-or-mouse.hf.space/predict", {
+      const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(payload)
       });
 
-      if (!response.ok) {
-        const errorDetail = await response.text();
-        console.error("Erreur réponse Hugging Face:", errorDetail);
-        return res.status(response.status).json({ error: "Erreur Hugging Face", detail: errorDetail });
-      }
-
       const result = await response.json();
-      res.status(200).json({ result });
-
+      res.status(200).json({ result: result.data[0] });
     } catch (error) {
       console.error("Erreur appel Hugging Face :", error);
       res.status(500).json({ error: "Erreur Hugging Face" });
