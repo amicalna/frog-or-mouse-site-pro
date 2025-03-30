@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     }
 
     const formData = new FormData();
-    formData.append("image", fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename);
+    formData.append("data", fs.createReadStream(uploadedFile.filepath), uploadedFile.originalFilename);
 
     try {
       const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
