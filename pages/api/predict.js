@@ -32,13 +32,9 @@ export default async function handler(req, res) {
     // Préparer le formData comme attendu par Gradio
     const formData = new FormData();
     console.log("📂 Fichier reçu depuis le frontend :", uploadedFile);
-    formData.append("data", JSON.stringify([{
-        name: "image",
-        data: null,
-        orig_name: uploadedFile.originalFilename
-      }]));
-      formData.append("image", fs.createReadStream(uploadedFile.filepath));      
-
+    formData.append("data", JSON.stringify([null])); // Gradio attend [null]
+    formData.append("file", fs.createReadStream(uploadedFile.filepath)); // ⚠️ Champ "file"
+     
     try {
       const response = await fetch("https://amicalement-frog-or-mouse.hf.space/api/predict", {
         method: "POST",
