@@ -31,6 +31,7 @@ export default async function handler(req, res) {
 
     // Préparer le formData comme attendu par Gradio
     const formData = new FormData();
+    console.log("📂 Fichier reçu depuis le frontend :", uploadedFile);
     formData.append("data", JSON.stringify([null])); // Gradio attend un champ data (même vide)
     formData.append("files", fs.createReadStream(uploadedFile.filepath)); // L’image ici
 
@@ -42,6 +43,7 @@ export default async function handler(req, res) {
       });
 
       const text = await response.text();
+      console.log("📨 Réponse Hugging Face :", text);
       let result;
       try {
         result = JSON.parse(text);
