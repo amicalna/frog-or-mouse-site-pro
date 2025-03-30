@@ -24,11 +24,8 @@ export default function Home() {
 
       const data = await response.json();
 console.log("🧪 Résultat reçu :", data);
-setResult(data.detail || "❌ Réponse invalide");
-} catch (error) {
-  console.error("Erreur API :", error);
-  setResult("❌ Erreur, réessaie !");
-}
+setResult(data.result || data.error || "❌ Réponse invalide");
+
 
     setLoading(false);
   };
