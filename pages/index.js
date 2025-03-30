@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 // 🔁 Remplace l’URL locale par celle de ton backend Gradio
-const API_URL = "https://amicalement-frog-or-mouse-api.hf.space/run/predict";
+const API_URL = "/api/predict";
 
 export default function Home() {
   const [file, setFile] = useState(null);
