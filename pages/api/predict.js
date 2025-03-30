@@ -33,9 +33,10 @@ export default async function handler(req, res) {
     const mimeType = uploadedFile.mimetype;
 
     const payload = {
-      data: [
-        `data:${mimeType};base64,${base64Image}`
-      ]
+      data: [{
+        data: `data:${mimeType};base64,${base64Image}`,
+        name: uploadedFile.originalFilename
+      }]
     };
 
     try {
