@@ -34,7 +34,7 @@ export default async function handler(req, res) {
     formData.append("files", fs.createReadStream(uploadedFile.filepath)); // L’image ici
 
     try {
-      const response = await fetch("https://amicalement-frog-or-mouse-api.hf.space/run/predict", {
+      const response = await fetch("https://amicalement-frog-or-mouse.hf.space/run/predict", {
         method: "POST",
         body: formData,
         headers: formData.getHeaders(),
