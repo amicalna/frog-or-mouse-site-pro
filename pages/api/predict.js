@@ -24,6 +24,7 @@ export default async function handler(req, res) {
     }
 
     const uploadedFile = files.file?.[0] || files.file;
+    console.log("📂 Fichier uploadé :", uploadedFile);
     if (!uploadedFile || !uploadedFile.filepath) {
       return res.status(400).json({ error: "Fichier manquant" });
     }
