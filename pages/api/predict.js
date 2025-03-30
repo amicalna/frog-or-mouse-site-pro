@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Erreur parsing fichier" });
     }
 
-    const file = files.data;
+    const file = files.file;
 
     const formData = new FormData();
     formData.append("data", fs.createReadStream(file.filepath), file.originalFilename);

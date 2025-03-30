@@ -14,7 +14,7 @@ export default function Home() {
     setResult("");
 
     const formData = new FormData();
-    formData.append("data", file);
+    formData.append("file", file);
 
     try {
       const response = await fetch(API_URL, {
