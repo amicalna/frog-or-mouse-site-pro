@@ -1,36 +1,26 @@
-import { useState } from "react";
+const handleUpload = async () => {
+  if (!file) return;
+  setLoading(true);
+  setResult("");
 
-// 🔁 Remplace l’URL locale par celle de ton backend Gradio
-const API_URL = "/api/predict";
+  const reader = new FileReader();
 
-export default function Home() {
-  const [file, setFile] = useState(null);
-  const [result, setResult] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handleUpload = async () => {
-    if (!file) return;
-    setLoading(true);
-    setResult("");
-
-    const formData = new FormData();
-
-    // ⚠️ Gradio attend "data" comme un tableau avec le fichier
-    formData.append("data", JSON.stringify([null])); // Gradio veut un champ "data"
-    formData.append("file", file, file.name); // ✅ ajoute le nom du fichier
+  reader.onloadend = async () => {
+    const base64 = reader.result;
+    console.log("📸 Image encodée base64 :", base64.slice(0, 100));
 
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch("/api/predict", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ base64 }),
       });
 
       const data = await response.json();
       console.log("🧪 Résultat reçu :", data);
-
-      // On récupère la prédiction depuis Gradio
-      const prediction = data.data?.[0];
-      setResult(prediction || "❌ Réponse invalide");
+      setResult(data.result || data.error || "❌ Réponse invalide");
     } catch (error) {
       console.error("Erreur API :", error);
       setResult("❌ Erreur, réessaie !");
@@ -39,18 +29,5 @@ export default function Home() {
     setLoading(false);
   };
 
-  return (
-    <div style={{ padding: "2rem" }}>
-      <h1>Frog or Mouse 🐸🐭</h1>
-      <input
-        type="file"
-        accept="image/*"
-        onChange={(e) => setFile(e.target.files[0])}
-      />
-      <button onClick={handleUpload} disabled={loading}>
-        {loading ? "Analyse..." : "Devine mon espèce !"}
-      </button>
-      <p>{result}</p>
-    </div>
-  );
-}
+  reader.readAsDataURL(file); // Convertit l’image en base64 automatiquement
+};
