@@ -29,14 +29,16 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: "Fichier manquant" });
     }
 
-    const formData = new FormData();
-    formData.append("data", JSON.stringify([null])); // Ne change pas
-    formData.append("image", fs.createReadStream(uploadedFile.filepath), {
-      filename: uploadedFile.originalFilename,
-      contentType: uploadedFile.mimetype,
-    });
-
     try {
+      const fileBuffer = fs.readFileSync(uploadedFile.filepath);
+
+      const formData = new FormData();
+      formData.append("data", JSON.stringify([null]));
+      formData.append("image", fileBuffer, {
+        filename: uploadedFile.originalFilename,
+        contentType: uploadedFile.mimetype,
+      });
+
       const response = await axios.post(
         "https://amicalement-frog-or-mouse.hf.space/run/predict",
         formData,
