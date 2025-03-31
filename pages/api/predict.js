@@ -46,9 +46,11 @@ export default async function handler(req, res) {
           headers: formData.getHeaders(),
           maxBodyLength: Infinity,
         }
-      );      
+      );
 
-      res.status(200).json({ result: response.data.data?.[0] || "❌ Réponse invalide" });
+      res.status(200).json({
+        result: response.data.data?.[0] || "❌ Réponse invalide",
+      });
     } catch (error) {
       const raw = error.response?.data || error.message;
       console.error("Erreur Hugging Face :", raw);
