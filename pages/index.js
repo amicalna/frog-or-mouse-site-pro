@@ -7,7 +7,6 @@ const handleUpload = async () => {
 
   reader.onloadend = async () => {
     const base64 = reader.result;
-    console.log("📸 Image encodée base64 :", base64.slice(0, 100));
 
     try {
       const response = await fetch("/api/predict", {
