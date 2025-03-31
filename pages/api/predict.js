@@ -30,15 +30,15 @@ export default async function handler(req, res) {
     }
 
     const formData = new FormData();
-    formData.append("data", JSON.stringify([null]));
-    formData.append("file", fs.createReadStream(uploadedFile.filepath), {
+    formData.append("data", JSON.stringify([null])); // Ne change pas
+    formData.append("image", fs.createReadStream(uploadedFile.filepath), {
       filename: uploadedFile.originalFilename,
       contentType: uploadedFile.mimetype,
     });
 
     try {
       const response = await axios.post(
-        "https://amicalement-frog-or-mouse.hf.space/api/predict",
+        "https://amicalement-frog-or-mouse.hf.space/run/predict",
         formData,
         {
           headers: formData.getHeaders(),
