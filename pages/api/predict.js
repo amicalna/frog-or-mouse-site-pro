@@ -40,13 +40,13 @@ export default async function handler(req, res) {
       });
 
       const response = await axios.post(
-        "https://amicalement-frog-or-mouse.hf.space/run/predict",
+        "https://amicalement-frog-or-mouse.hf.space/",
         formData,
         {
           headers: formData.getHeaders(),
           maxBodyLength: Infinity,
         }
-      );
+      );      
 
       res.status(200).json({ result: response.data.data?.[0] || "❌ Réponse invalide" });
     } catch (error) {
